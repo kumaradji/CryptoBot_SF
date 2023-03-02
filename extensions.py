@@ -1,7 +1,7 @@
 import requests
 import json
 
-from config import exchanges
+from config import exchanges, APIKEY
 
 
 class APIException(Exception):
@@ -10,18 +10,18 @@ class APIException(Exception):
 
 class Convertor:
     @staticmethod
-    def convert(base: str, sym: str, amount: str):
+    def convert(base: str, target: str, amount: str):
         try:
-            base_key = exchanges[base.lower()]
+            base_code = exchanges[base.lower()]
         except KeyError:
             raise APIException(f'Валюта {base} не найдена!')
 
         try:
-            sym_key = exchanges[sym.lower()]
+            target_code = exchanges[target.lower()]
         except KeyError:
-            raise APIException(f'Валюта {sym} не найдена!')
+            raise APIException(f'Валюта {target} не найдена!')
 
-        if base_key == sym_key:
+        if base_code == target_code:
             raise APIException(f'Невозможно перевести одинаковые валюты {base}!')
 
         try:
@@ -29,11 +29,11 @@ class Convertor:
         except ValueError:
             raise APIException(f'Не удалось обработать количество {amount}!')
 
-        # r = requests.get(f"https://api.exchangeratesapi.io/latest?base={quote_ticker}&symbols={base_ticker}")
-        r = requests.get(f"https://min-api.cryptocompare.com/data/price?fsym={sym_key}&tsyms={base_key}")
+        r = requests.get(f"https://v6.exchangerate-api.com/v6/{APIKEY}/pair/{target_code}/{base_code}/{amount}")
         resp = json.loads(r.content)
-        new_price = resp['rates'][base_key] * amount
+        print(resp)
+        new_price = resp['conversion_rate'] * amount
         new_price = round(new_price, 3)
-        message = f'Цена {amount} {base} в {sym} : {new_price}'
+        message = f'Цена {amount} {base} в {target} : {new_price}'
         return message
 
