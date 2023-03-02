@@ -1,7 +1,7 @@
 import telebot
 import traceback
 
-from config import *
+from config import exchanges, TOKEN
 from extensions import APIException, Convertor
 
 bot = telebot.TeleBot(TOKEN)
@@ -27,12 +27,12 @@ def values(message: telebot.types.Message):
 
 @bot.message_handler(content_types=['text', ])
 def converter(message: telebot.types.Message):
-    values = message.text.split(' ')
+    val = message.text.split(' ')
     try:
-        if len(values) != 3:
-            raise APIException('Неправильно указаны параметры')
+        if len(val) != 3:
+            raise APIException('Неправильно указаны параметры /start')
 
-        answer = Convertor.convert(*values)
+        answer = Convertor.get_price(*val)
     except APIException as e:
         bot.reply_to(message, f'Ошибка в команде:\n{e}')
     except Exception as e:
